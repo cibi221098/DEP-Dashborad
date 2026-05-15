@@ -299,7 +299,7 @@ input[type=number]{-moz-appearance:textfield}
         <table class="events-table">
           <thead><tr>
             <th>#</th><th>Bill No.</th><th>Client</th><th>Business</th><th>Type</th><th>Date</th>
-            <th>Total Revenue (₹)</th><th>GST 18% (₹)</th><th>TDS (₹)</th><th>Advance (₹)</th><th>Balance (₹)</th>
+            <th>Total Revenue (₹)</th><th>GST 18% (₹)</th><th>Grand Total (₹)</th><th>TDS (₹)</th><th>Advance (₹)</th><th>Balance (₹)</th>
             <th>Status</th><th>Net Profit (₹)</th><th>Actions</th>
           </tr></thead>
           <tbody id="gst-tbody"></tbody>
@@ -2083,8 +2083,9 @@ function renderGstTable(){
   document.getElementById('gst-empty').classList.toggle('hidden',filtered.length>0);
   document.getElementById('gst-tbody').innerHTML=filtered.map(ev=>{
     const {totalExp,profit,isPaid,profitUnlocked,isMk,postProdDone,postProdExpense}=calcGstTotals(ev);
-    const balance=isPaid?0:ev.balanceStatus==='Partially Paid'?(ev.clientPending||0):(ev.total||0)-(ev.advance||0);
     const gstAmt=Math.round((ev.total||0)*0.18);
+    const grandTotal=(ev.total||0)+gstAmt;
+    const balance=isPaid?0:ev.balanceStatus==='Partially Paid'?(ev.clientPending||0):grandTotal-(ev.advance||0);
     const postProdBadge=postProdExpense>0?(!postProdDone?'<div style="font-size:9px;background:#FFF3CD;color:#856404;border-radius:4px;padding:1px 5px;margin-top:2px;display:inline-block">🎬 Post-Prod Pending</div>':'<div style="font-size:9px;background:#DCF0E7;color:#1A7A4A;border-radius:4px;padding:1px 5px;margin-top:2px;display:inline-block">🎬 Post-Prod Done</div>'):'';
     return`<tr>
       <td style="color:var(--muted);font-size:11px">${ev.id}</td>
@@ -2095,6 +2096,7 @@ function renderGstTable(){
       <td style="color:var(--muted);font-size:12px">${ev.date||'-'}</td>
       <td class="num" style="font-weight:500;color:${isPaid?'inherit':'#996B00'}">${fmt(ev.total)}</td>
       <td class="num" style="color:var(--muted);font-size:12px">${fmt(gstAmt)}</td>
+      <td class="num" style="font-weight:600;color:#1A4A8A">${fmt(grandTotal)}</td>
       <td class="num" style="color:${isPaid&&(ev.tds||0)>0?'#1A4A8A':'var(--muted)'};font-size:12px">${isPaid&&(ev.tds||0)>0?fmt(ev.tds||0):'<span style="color:#ccc">—</span>'}</td>
       <td class="num" style="color:var(--success)">${fmt(ev.advance)}</td>
       <td class="num" style="color:${isPaid?'var(--muted)':ev.balanceStatus==='Partially Paid'?'#6B1AB5':'var(--danger)'}">${balance>0?fmt(balance):'<span style="color:var(--muted)">—</span>'}</td>
